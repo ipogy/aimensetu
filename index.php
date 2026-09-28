@@ -474,7 +474,7 @@ $testEntryUrl = "{$baseUrl}/entry.html?company=test";
         grid-template-columns: 1fr;
         gap: 2.5rem;
         padding-top: 1.75rem;
-        padding-bottom: 5.5rem;
+        padding-bottom: 2.5rem;
       }
 
       .hero-heading {
@@ -490,6 +490,7 @@ $testEntryUrl = "{$baseUrl}/entry.html?company=test";
         font-size: 0.78rem;
       }
 
+      /* 固定CTAバー */
       .mobile-cta-bar {
         display: block;
         position: fixed;
@@ -508,6 +509,12 @@ $testEntryUrl = "{$baseUrl}/entry.html?company=test";
         width: 100%;
         min-height: 48px;
         font-size: 0.95rem;
+      }
+
+      /* 固定バーの被り解消: 固定バー高さ分(約68px)をフッターのパディング下部に確保 */
+      footer {
+        padding-top: 1.75rem;
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom));
       }
 
       .footer-inner {

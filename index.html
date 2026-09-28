@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 対話型面接システム</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>オンライン対話面接 | AI面接選考システム</title>
   
   <!-- MediaPipe Face Mesh CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -11,119 +11,261 @@
 
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --bg: #0f172a;
-      --card: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --success: #16a34a;
-      --accent-bg: #e0f2fe;
-      --accent-border: #0284c7;
-      --accent-text: #0369a1;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-subtle: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #94a3b8;
+
+      --brand: #1e3a8a;          /* ディープネイビー */
+      --brand-hover: #172554;
+      --brand-accent: #2563eb;
+      --brand-light: #eff6ff;
+
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --success-border: #a7f3d0;
+
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --danger-light: #fef2f2;
+      --danger-border: #fecaca;
+
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --warning-border: #fde68a;
+
+      --radius: 8px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.1);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f1f5f9;
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-feature-settings: "palt";
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100dvh;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 1rem;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
       user-select: none;
     }
-    .container {
-      width: 100%;
-      max-width: 680px;
-      background: var(--card);
-      border-radius: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08);
-      padding: 2rem;
-      text-align: center;
-      position: relative;
-    }
-    h1 { font-size: 1.4rem; margin-bottom: 0.5rem; }
 
-    /* ブラウザ非推奨警告バー */
-    .browser-warning {
-      display: none;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      color: #b45309;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-align: left;
-      margin-bottom: 1.25rem;
-      line-height: 1.5;
+    /* ヘッダー */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
     }
 
-    .check-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-    .check-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.3rem; color: #1e293b; }
-    .check-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5; }
-    .check-item {
-      background: #fff;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.9rem;
-      margin-bottom: 0.9rem;
-    }
-    .check-item-header {
+    .header-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0.85rem 1.25rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      gap: 1rem;
     }
-    .check-label { font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 6px; }
-    .status-pill {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.2rem 0.6rem;
-      border-radius: 9999px;
-      background: #f1f5f9;
-      color: #64748b;
-    }
-    .status-pill.ok { background: #dcfce7; color: var(--success); }
-    .status-pill.warn { background: #fee2e2; color: var(--danger); }
 
-    .test-btn {
-      background: #e2e8f0;
-      color: #1e293b;
-      border: none;
-      border-radius: 6px;
-      padding: 0.45rem 0.85rem;
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      background: var(--brand);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    /* メインコンテナ */
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3.5rem;
+    }
+
+    .interview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 2rem;
+      position: relative;
+    }
+
+    /* 非推奨ブラウザ警告バー */
+    .browser-warning {
+      display: none;
+      background: var(--warning-light);
+      border: 1px solid var(--warning-border);
+      color: #92400e;
+      padding: 0.85rem 1.15rem;
+      border-radius: var(--radius-sm);
       font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    /* 事前機器チェック */
+    .section-header {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .section-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .check-item {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.15rem;
+    }
+
+    .check-item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .check-item-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-tertiary);
+      white-space: nowrap;
+    }
+
+    .status-pill.ok {
+      background: var(--success-light);
+      border-color: var(--success-border);
+      color: var(--success);
+    }
+
+    .status-pill.warn {
+      background: var(--danger-light);
+      border-color: var(--danger-border);
+      color: var(--danger);
+    }
+
+    .btn-test {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 0.45rem 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background-color 0.15s ease;
+      font-family: inherit;
+      white-space: nowrap;
     }
-    .test-btn:hover { background: #cbd5e1; }
 
-    /* カメラプレビュー（16:9比率） */
+    .btn-test:hover {
+      background: var(--surface-subtle);
+    }
+
     .preview-video-container {
       width: 100%;
-      max-width: 420px;
+      max-width: 380px;
       aspect-ratio: 16 / 9;
-      background: #000;
-      border-radius: 8px;
+      background: #0f172a;
+      border-radius: var(--radius-sm);
       overflow: hidden;
-      margin: 0.8rem auto;
+      margin: 0.85rem 0 0.5rem;
       display: flex;
       justify-content: center;
       align-items: center;
     }
+
     .preview-video {
       width: 100%;
       height: 100%;
@@ -134,221 +276,318 @@
     .meter-container {
       width: 100%;
       height: 8px;
-      background: #e2e8f0;
+      background: var(--border);
       border-radius: 9999px;
       overflow: hidden;
-      margin: 0.5rem 0;
+      margin: 0.75rem 0 0.4rem;
     }
-    .meter-bar { width: 0%; height: 100%; background: var(--success); transition: width 0.08s ease; }
-    .device-note { font-size: 0.78rem; color: #64748b; margin-top: 4px; }
 
-    /* 面接本番：自分カメラ小窓（PiP） */
+    .meter-bar {
+      width: 0%;
+      height: 100%;
+      background: var(--success);
+      transition: width 0.08s ease;
+    }
+
+    .device-note {
+      font-size: 0.76rem;
+      color: var(--text-tertiary);
+      margin-top: 0.35rem;
+    }
+
+    .notice-box {
+      background: var(--brand-light);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      font-size: 0.8rem;
+      color: #1e40af;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ボタン共通 */
+    .btn-action {
+      width: 100%;
+      min-height: 48px;
+      background: var(--brand);
+      color: #fff;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      transition: background-color 0.15s ease;
+      user-select: none;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-action:hover:not(:disabled) {
+      background: var(--brand-hover);
+    }
+
+    .btn-action:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn-action:disabled {
+      background: var(--border-strong);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+
+    /* 本番面接画面レイアウト */
+    .interview-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      position: relative;
+    }
+
+    /* 自画像 PiP 小窓（PC配置） */
     .live-camera-pip {
       position: absolute;
-      top: 1.5rem;
-      right: 1.5rem;
-      width: 130px;
-      height: 95px;
-      background: #000;
-      border-radius: 10px;
+      top: 0;
+      right: 0;
+      width: 140px;
+      aspect-ratio: 4 / 3;
+      background: #0f172a;
+      border-radius: var(--radius-sm);
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      border: 2px solid #fff;
-      z-index: 50;
+      box-shadow: var(--shadow-md);
+      border: 2px solid var(--surface);
+      z-index: 20;
     }
+
     .live-camera-pip video {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transform: scaleX(-1);
     }
+
     .pip-label {
       position: absolute;
-      bottom: 2px;
-      left: 4px;
+      bottom: 4px;
+      left: 6px;
       font-size: 0.65rem;
-      background: rgba(0,0,0,0.6);
+      background: rgba(15, 23, 42, 0.75);
       color: #fff;
-      padding: 1px 4px;
+      padding: 1px 5px;
       border-radius: 3px;
+      font-weight: 600;
+      white-space: nowrap;
     }
-    .ai-monitor-badge {
+
+    .pip-status {
       position: absolute;
-      top: 2px;
-      right: 4px;
-      font-size: 0.6rem;
-      background: rgba(22, 163, 74, 0.85);
+      top: 4px;
+      right: 6px;
+      font-size: 0.65rem;
+      background: var(--success);
       color: #fff;
-      padding: 1px 4px;
+      padding: 1px 5px;
       border-radius: 3px;
-      font-weight: bold;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     .status-row {
       display: flex;
-      justify-content: flex-start;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 1.25rem;
+      gap: 0.6rem;
       flex-wrap: wrap;
+      padding-right: 155px; /* PC時は自画像小窓と被らない余白を確保 */
     }
+
     .status-badge {
-      display: inline-block;
-      padding: 0.3rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.825rem;
-      font-weight: 600;
-      background: #e2e8f0;
-      color: #334155;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
     }
+
     .timer-badge {
-      display: inline-block;
-      padding: 0.3rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.825rem;
-      font-weight: 600;
-      background: #fef3c7;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: var(--warning-light);
+      border: 1px solid var(--warning-border);
       color: #92400e;
-      border: 1px solid #fde68a;
     }
-    .resume-notice {
+
+    .resume-alert {
       display: none;
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 8px;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      font-size: 0.85rem;
-      color: #b45309;
+      background: var(--warning-light);
+      border: 1px solid var(--warning-border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      color: #92400e;
       font-weight: 600;
     }
+
+    /* 質問表示ボックス */
     .question-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 1.5rem;
-      margin-bottom: 1rem;
-      font-size: 1.12rem;
-      line-height: 1.65;
+      font-size: 1.05rem;
+      line-height: 1.7;
       min-height: 110px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-weight: 500;
+      font-weight: 600;
+      color: var(--text-primary);
     }
+
+    /* タイマー進行バー */
     .timer-area {
       display: none;
-      margin-bottom: 1.25rem;
-      background: #f8fafc;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1.15rem;
     }
+
     .timer-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.875rem;
-      margin-bottom: 0.4rem;
+      font-size: 0.82rem;
+      margin-bottom: 0.45rem;
     }
+
     .timer-countdown {
-      font-family: monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--primary);
+      font-weight: 800;
+      color: var(--brand-accent);
     }
+
     .progress-track {
       width: 100%;
-      height: 8px;
-      background: #e2e8f0;
+      height: 6px;
+      background: var(--border);
       border-radius: 9999px;
       overflow: hidden;
     }
+
     .progress-bar {
       height: 100%;
       width: 100%;
-      background: var(--primary);
+      background: var(--brand-accent);
       transition: width 1s linear, background-color 0.3s ease;
     }
+
     .timer-hint {
-      margin-top: 0.35rem;
+      margin-top: 0.4rem;
       font-size: 0.75rem;
-      color: var(--text-muted);
+      color: var(--text-tertiary);
       text-align: right;
     }
+
+    /* リアルタイム認識結果 */
     .recognized-box {
-      margin-bottom: 1rem;
+      background: var(--surface-subtle);
+      border-left: 3px solid var(--brand-accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
       padding: 0.85rem 1rem;
-      background: var(--accent-bg);
-      border-left: 4px solid var(--accent-border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-      text-align: left;
-      color: var(--accent-text);
-      line-height: 1.5;
+      font-size: 0.85rem;
     }
+
+    .recognized-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.3rem;
+    }
+
     .recognized-content {
-      margin-top: 4px;
-      color: #0c4a6e;
+      font-size: 0.92rem;
+      color: var(--text-primary);
       font-weight: 600;
-      min-height: 1.4em;
+      line-height: 1.55;
+      min-height: 1.5em;
     }
-    .manual-input-area { display: none; margin-bottom: 1rem; text-align: left; }
-    .manual-textarea {
-      width: 100%;
-      height: 70px;
-      padding: 0.6rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-family: inherit;
-    }
-    .toggle-manual-btn {
-      background: none;
+
+    /* 手入力フォールバック */
+    .manual-toggle-btn {
+      background: transparent;
       border: none;
-      color: #64748b;
-      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      font-size: 0.78rem;
       cursor: pointer;
       text-decoration: underline;
-      margin-bottom: 1rem;
-      display: inline-block;
+      align-self: flex-start;
+      font-family: inherit;
     }
-    .mic-indicator {
+
+    .manual-input-area {
+      display: none;
+    }
+
+    .manual-textarea {
+      width: 100%;
+      height: 75px;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      line-height: 1.55;
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    /* マイクインジケーター */
+    .mic-live-indicator {
       display: none;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 0.5rem;
       color: var(--danger);
-      font-weight: 600;
-      margin-bottom: 1.25rem;
+      font-size: 0.82rem;
+      font-weight: 700;
     }
+
     .mic-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       background: var(--danger);
       border-radius: 50%;
       animation: pulse 1.5s infinite;
     }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.35; transform: scale(1.25); }
+      50% { opacity: 0.3; transform: scale(1.2); }
     }
-    .btn {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 0.85rem 1.75rem;
-      font-size: 1.05rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-      width: 100%;
-    }
-    .btn:hover:not(:disabled) { background: var(--primary-hover); }
-    .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
-    .footer-note { font-size: 0.825rem; color: var(--text-muted); margin-top: 1rem; }
 
+    .hint-note {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+
+    /* フルスクリーン復帰オーバーレイ */
     .fullscreen-overlay {
       display: none;
       position: fixed;
@@ -362,96 +601,224 @@
       padding: 2rem;
       text-align: center;
     }
-    .fullscreen-overlay h2 { font-size: 1.6rem; color: #f87171; margin-bottom: 1rem; }
-    .fullscreen-overlay p { margin-bottom: 1.5rem; color: #cbd5e1; max-width: 500px; line-height: 1.6; }
-    .overlay-btn {
-      background: #ef4444;
-      color: #fff;
-      border: none;
-      padding: 0.85rem 2rem;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
+
+    .fullscreen-overlay h2 {
+      font-size: 1.4rem;
+      color: #fca5a5;
+      margin-bottom: 0.75rem;
     }
 
-    /* 厳格受検規約・誓約モーダル */
+    .fullscreen-overlay p {
+      font-size: 0.9rem;
+      color: var(--border-strong);
+      max-width: 480px;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    /* 規約・同意モーダル */
     .modal-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 2000;
       justify-content: center;
       align-items: center;
       padding: 1rem;
     }
+
     .modal-card {
-      background: #fff;
-      border-radius: 12px;
+      background: var(--surface);
+      border-radius: var(--radius);
       max-width: 620px;
       width: 100%;
       padding: 1.75rem;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25);
-      text-align: left;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
     }
-    .modal-card h3 { font-size: 1.2rem; color: #0f172a; margin-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
-    .scroll-hint { font-size: 0.8rem; color: #b45309; margin-bottom: 0.5rem; font-weight: 600; }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 0.35rem;
+    }
+
+    .scroll-hint {
+      font-size: 0.78rem;
+      color: var(--warning);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
     .terms-box {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      font-size: 0.86rem;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.15rem;
+      font-size: 0.85rem;
       line-height: 1.65;
-      color: #334155;
-      max-height: 280px;
+      color: var(--text-secondary);
+      max-height: 260px;
       overflow-y: scroll;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
-    .terms-box h4 { font-size: 0.92rem; margin: 1rem 0 0.35rem 0; color: #0f172a; font-weight: 700; }
+
+    .terms-box h4 {
+      font-size: 0.88rem;
+      margin: 1rem 0 0.3rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
     .terms-box h4:first-child { margin-top: 0; }
-    .terms-box ul { padding-left: 1.25rem; margin-bottom: 0.5rem; }
+    .terms-box ul { padding-left: 1.2rem; }
     .terms-box li { margin-bottom: 0.25rem; }
-    .terms-alert { color: #dc2626; font-weight: 600; }
+    .terms-alert { color: var(--danger); font-weight: 600; }
 
     .consent-check-row {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 1.25rem;
-      font-size: 0.92rem;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.88rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--text-primary);
+      cursor: pointer;
     }
-    .consent-check-row input { margin-top: 4px; width: 18px; height: 18px; cursor: pointer; }
-    .modal-btn-row { display: flex; gap: 10px; }
-    .modal-btn-cancel {
-      background: #e2e8f0;
-      color: #475569;
-      border: none;
-      border-radius: 8px;
-      padding: 0.85rem 1.2rem;
+
+    .consent-check-row input {
+      margin-top: 0.25rem;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--brand);
+    }
+
+    /* モーダル下部ボタングループの強化修正 */
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0 1.25rem;
+      min-height: 48px;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap; /* 「戻る」の縦文字割れを確実に防止 */
+      flex-shrink: 0;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-subtle);
+    }
+
+    .modal-actions .btn-action {
+      flex: 1;
+    }
+
+    /* フッター */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      align-items: center;
+    }
+
+    /* スマホ・小型端末最適化 (640px以下) */
+    @media (max-width: 640px) {
+      .header-inner {
+        padding: 0.75rem 1rem;
+      }
+      .brand-title {
+        font-size: 0.9rem;
+      }
+      main {
+        padding: 1.25rem 1rem 2.5rem;
+      }
+      .interview-card {
+        padding: 1.25rem;
+      }
+
+      /* スマホ時は自画像を画面上部の専用ブロックに安全に配置 */
+      .live-camera-pip {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto 0.75rem auto;
+        display: block;
+      }
+
+      .status-row {
+        padding-right: 0; /* 右上のマージン打ち消し */
+        justify-content: center;
+      }
+
+      .question-box {
+        font-size: 0.98rem;
+        padding: 1.15rem;
+      }
+
+      .modal-card {
+        padding: 1.25rem;
+      }
+
+      /* モーダルボタンのスマホ最適化（確実に2段積み・幅100%） */
+      .modal-actions {
+        flex-direction: column-reverse;
+        gap: 0.6rem;
+      }
+
+      .modal-actions .btn-secondary,
+      .modal-actions .btn-action {
+        width: 100%;
+        min-height: 48px;
+      }
     }
   </style>
 </head>
 <body oncontextmenu="return false;">
 
-<!-- フルスクリーン解除時の強制復帰オーバーレイ -->
+<!-- フルスクリーン復帰オーバーレイ -->
 <div class="fullscreen-overlay" id="fullscreenOverlay">
-  <h2>⚠️ フルスクリーンが解除されました</h2>
-  <p>面接の公平性を保つため、面接中は全画面表示（フルスクリーン）が必須です。別ウィンドウやアプリへの切り替えは不正行為として記録されます。</p>
-  <button class="overlay-btn" onclick="restoreFullscreen()">全画面表示に戻して面接を再開</button>
+  <h2>全画面表示が解除されました</h2>
+  <p>選考の公平性と環境保全のため、面接中は全画面表示（フルスクリーン）が必須です。別ウィンドウやアプリへの切り替えは不正監視ログに記録されます。</p>
+  <button type="button" class="btn-action" style="background: var(--danger); max-width: 280px;" onclick="restoreFullscreen()">全画面表示に戻して面接を再開</button>
 </div>
 
-<!-- 厳格受検規約・誓約モーダル -->
+<!-- 規約・誓約モーダル -->
 <div class="modal-overlay" id="consentModal">
   <div class="modal-card">
-    <h3>📋 AI対話型面接 受検規則および誓約事項</h3>
-    <div class="scroll-hint" id="scrollHint">▼ 規約を最後までスクロールして内容を確認してください</div>
+    <div class="modal-title">AI対話型面接 受検規約および誓約事項</div>
+    <div class="scroll-hint" id="scrollHint">規約を最後までスクロールして内容を確認してください</div>
     
     <div class="terms-box" id="termsBox" onscroll="handleTermsScroll()">
       <h4>第1条（受検環境および厳格な禁止事項）</h4>
@@ -486,132 +853,183 @@
 
     <label class="consent-check-row">
       <input type="checkbox" id="consentCheckbox" onchange="toggleConsentButton()" disabled>
-      <span id="consentCheckLabel" style="color: #94a3b8;">規約を最後まで確認するとチェックできるようになります</span>
+      <span id="consentCheckLabel" style="color: var(--text-tertiary);">規約を最後まで確認するとチェックできるようになります</span>
     </label>
 
-    <div class="modal-btn-row">
-      <button type="button" class="modal-btn-cancel" onclick="closeConsentModal()">戻る</button>
-      <button type="button" class="btn" id="confirmStartBtn" onclick="agreeAndStartInterview()" disabled>誓約して面接を開始する（全画面）</button>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="closeConsentModal()">戻る</button>
+      <button type="button" class="btn-action" id="confirmStartBtn" onclick="agreeAndStartInterview()" disabled>誓約して面接を開始する（全画面）</button>
     </div>
   </div>
 </div>
 
-<div class="container" id="mainCard">
-  <h1>AI 対話型面接</h1>
-
-  <!-- 非推奨ブラウザ警告バー -->
-  <div class="browser-warning" id="browserWarning">
-    ⚠️ <strong>推奨環境外のブラウザが検出されました。</strong><br>
-    現在お使いのブラウザでは音声認識やカメラ監視が正常に作動しない場合があります。PCの <strong>Google Chrome</strong> または <strong>Microsoft Edge</strong> での受検を強く推奨します。
+<header>
+  <div class="header-inner">
+    <div class="brand-wrap">
+      <div class="brand-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+        </svg>
+      </div>
+      <span class="brand-title">AI面接選考システム</span>
+    </div>
+    <span class="header-badge">オンライン選考ポータル</span>
   </div>
+</header>
 
-  <!-- 事前チェックセクション -->
-  <div id="checkSection" class="check-card">
-    <div class="check-title">🎧 面接前の環境・機器チェック</div>
-    <div class="check-desc">公平かつ安定した面接のため、カメラ・マイク・スピーカーの動作確認を行います。</div>
-
-    <div class="check-item">
-      <div class="check-item-header">
-        <span class="check-label">📷 カメラ（映像）テスト</span>
-        <span class="status-pill" id="camStatus">未テスト</span>
-      </div>
-      <button type="button" class="test-btn" id="testCamBtn" onclick="startCamTest()">カメラを接続・確認する</button>
-      
-      <div class="preview-video-container" id="previewContainer" style="display:none;">
-        <video id="previewVideo" class="preview-video" autoplay playsinline muted></video>
-      </div>
-      <div class="device-note" id="camDeviceNote"></div>
+<main>
+  <div class="interview-card" id="mainCard">
+    <!-- 非推奨ブラウザ警告バー -->
+    <div class="browser-warning" id="browserWarning">
+      <strong>推奨環境外のブラウザが検出されました。</strong><br>
+      現在お使いのブラウザでは音声認識やカメラ監視が正常に作動しない場合があります。PCの <strong>Google Chrome</strong> または <strong>Microsoft Edge</strong> での受検を推奨します。
     </div>
 
-    <div class="check-item">
-      <div class="check-item-header">
-        <span class="check-label">🔊 音声（スピーカー）テスト</span>
-        <span class="status-pill" id="speakerStatus">未確認</span>
+    <!-- 事前チェックセクション -->
+    <div id="checkSection">
+      <div class="section-header">
+        <h1 class="section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>受検前の環境・機器動作チェック</span>
+        </h1>
+        <p class="section-desc">安定した対話面接のため、カメラ・スピーカー・マイクの導通テストを実施します。</p>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <button type="button" class="test-btn" id="playTestAudioBtn" onclick="playTestAudio()">▶ テスト音声を再生</button>
-        <label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer;">
-          <input type="checkbox" id="speakerConfirmCheck" onchange="toggleSpeakerConfirmed()"> 音声が聞こえた
-        </label>
+
+      <div class="check-list">
+        <!-- カメラ確認 -->
+        <div class="check-item">
+          <div class="check-item-head">
+            <span class="check-item-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+              <span>カメラ（映像入力）テスト</span>
+            </span>
+            <span class="status-pill" id="camStatus">未テスト</span>
+          </div>
+          <button type="button" class="btn-test" id="testCamBtn" onclick="startCamTest()">カメラを接続・確認する</button>
+          
+          <div class="preview-video-container" id="previewContainer" style="display:none;">
+            <video id="previewVideo" class="preview-video" autoplay playsinline muted></video>
+          </div>
+          <div class="device-note" id="camDeviceNote"></div>
+        </div>
+
+        <!-- スピーカー確認 -->
+        <div class="check-item">
+          <div class="check-item-head">
+            <span class="check-item-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+              <span>スピーカー（音声出力）テスト</span>
+            </span>
+            <span class="status-pill" id="speakerStatus">未確認</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <button type="button" class="btn-test" id="playTestAudioBtn" onclick="playTestAudio()">テスト音声を再生</button>
+            <label style="font-size:0.82rem; display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text-primary); font-weight:600;">
+              <input type="checkbox" id="speakerConfirmCheck" onchange="toggleSpeakerConfirmed()" style="accent-color:var(--brand);"> 音声が正常に聞こえた
+            </label>
+          </div>
+        </div>
+
+        <!-- マイク確認 -->
+        <div class="check-item">
+          <div class="check-item-head">
+            <span class="check-item-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+              <span>マイク（音声入力）テスト</span>
+            </span>
+            <span class="status-pill" id="micStatus">未テスト</span>
+          </div>
+          <button type="button" class="btn-test" id="testMicBtn" onclick="startMicTest()">マイクをテストする</button>
+          
+          <div class="meter-container" id="meterContainer" style="display:none;">
+            <div class="meter-bar" id="meterBar"></div>
+          </div>
+          <div class="device-note" id="micLiveText">声を出してテストしてください（例:「テスト」「聞こえます」）</div>
+        </div>
       </div>
+
+      <div class="notice-box">
+        ※ 機器チェック完了後、不正防止誓約の確認を経て本番へ進みます。<br>
+        ※ 面接開始後は自動的に<strong>全画面表示（フルスクリーンモード）</strong>へ移行します。
+      </div>
+
+      <button type="button" class="btn-action" id="startInterviewBtn" onclick="openConsentModal()" disabled>
+        機器チェックを完了してください
+      </button>
     </div>
 
-    <div class="check-item">
-      <div class="check-item-header">
-        <span class="check-label">🎤 マイク（音声入力）テスト</span>
-        <span class="status-pill" id="micStatus">未テスト</span>
+    <!-- 面接本番セクション -->
+    <div id="interviewSection" class="interview-panel" style="display:none;">
+      <!-- 自画像小窓（PiP） -->
+      <div class="live-camera-pip" id="pipContainer">
+        <video id="livePipVideo" autoplay playsinline muted></video>
+        <div class="pip-label">自画像</div>
+        <div class="pip-status" id="aiMonitorBadge">AI監視中</div>
       </div>
-      <button type="button" class="test-btn" id="testMicBtn" onclick="startMicTest()">マイクをテストする</button>
-      
-      <div class="meter-container" id="meterContainer" style="display:none;">
-        <div class="meter-bar" id="meterBar"></div>
+
+      <div class="status-row">
+        <div class="status-badge" id="stateLabel">待機中</div>
+        <div class="timer-badge" id="timerBadge" style="display: none;"></div>
       </div>
-      <div class="device-note" id="micLiveText">声を出してテストしてください（例:「あー」「テスト」）</div>
-    </div>
 
-    <div style="margin-top: 1rem; font-size: 0.8rem; color: #64748b; text-align: left; line-height: 1.4;">
-      ※ 機器チェック完了後、厳格な受検規則および不正防止誓約の確認が必要です。<br>
-      ※ 面接開始後は自動的に<strong>全画面表示（フルスクリーンモード）</strong>に移行します。
-    </div>
+      <div class="resume-alert" id="resumeNotice">
+        前回の面接が中断されたため、直前の質問から再開します。（やり直し履歴は記録されます）
+      </div>
 
-    <button class="btn" id="startInterviewBtn" onclick="openConsentModal()" style="margin-top:1.25rem;" disabled>
-      機器チェックを完了してください
-    </button>
+      <div class="question-box" id="questionBox">
+        AI面接官が質問を開始します...
+      </div>
+
+      <div class="timer-area" id="timerArea">
+        <div class="timer-header">
+          <span id="timerTitle" style="font-weight: 700; color: var(--text-secondary);">回答残り時間目安</span>
+          <span class="timer-countdown" id="timerCountdown">0:00</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="timer-hint" id="timerHint">目安時間を過ぎても自動切断はされません</div>
+      </div>
+
+      <div class="recognized-box" id="recognizedBox">
+        <div class="recognized-title">リアルタイム音声認識</div>
+        <div class="recognized-content" id="recognizedText">準備中...</div>
+      </div>
+
+      <button type="button" class="manual-toggle-btn" id="toggleManualBtn" onclick="toggleManualInput()">
+        マイクが不調な場合はこちら（テキスト手入力へ切替）
+      </button>
+      <div class="manual-input-area" id="manualInputArea">
+        <textarea class="manual-textarea" id="manualText" placeholder="音声認識がうまく動かない場合は、こちらに文章を入力して送信できます。"></textarea>
+      </div>
+
+      <div class="mic-live-indicator" id="micIndicator">
+        <div class="mic-dot"></div>
+        <span>音声認識中・お話しください</span>
+      </div>
+
+      <button type="button" class="btn-action" id="actionBtn" onclick="handleAction()">回答を完了して送信</button>
+      <p class="hint-note" id="hintText">正面を向いてご回答ください（視線や顔向きをAIがモニタリングしています）。</p>
+    </div>
   </div>
+</main>
 
-  <!-- 面接本番セクション -->
-  <div id="interviewSection" style="display:none;">
-    <div class="live-camera-pip" id="pipContainer">
-      <video id="livePipVideo" autoplay playsinline muted></video>
-      <div class="pip-label">自分の映像</div>
-      <div class="ai-monitor-badge" id="aiMonitorBadge">AI監視中</div>
-    </div>
-
-    <div class="status-row">
-      <div class="status-badge" id="stateLabel">準備完了</div>
-      <div class="timer-badge" id="timerBadge" style="display: none;"></div>
-    </div>
-
-    <div class="resume-notice" id="resumeNotice">
-      ⚠️ 前回の面接が中断されたため、前回の質問から再開します。（やり直しは記録されます）
-    </div>
-
-    <div class="question-box" id="questionBox">
-      AI面接官が質問を開始します...
-    </div>
-
-    <div class="timer-area" id="timerArea">
-      <div class="timer-header">
-        <span id="timerTitle" style="font-weight: 600;">回答残り時間</span>
-        <span class="timer-countdown" id="timerCountdown">0:00</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-      <div class="timer-hint" id="timerHint">目安時間を過ぎても自動切断はされません</div>
-    </div>
-
-    <div class="recognized-box" id="recognizedBox">
-      <span>🎤 あなたの回答（リアルタイム認識）:</span>
-      <div class="recognized-content" id="recognizedText">準備中...</div>
-    </div>
-
-    <button type="button" class="toggle-manual-btn" id="toggleManualBtn" onclick="toggleManualInput()">
-      マイクが不調な場合はこちら（テキスト手入力）
-    </button>
-    <div class="manual-input-area" id="manualInputArea">
-      <textarea class="manual-textarea" id="manualText" placeholder="音声認識がうまく動かない場合は、こちらに入力して送信できます。"></textarea>
-    </div>
-
-    <div class="mic-indicator" id="micIndicator">
-      <div class="mic-dot"></div>
-      <span>マイク認識中... お話しください</span>
-    </div>
-
-    <button class="btn" id="actionBtn" onclick="handleAction()">回答を完了して送信</button>
-    <p class="footer-note" id="hintText">正面を向いてご回答ください（視線や顔向きをAIがモニタリングしています）。</p>
+<footer>
+  <div class="footer-inner">
+    <div>&copy; 2026 AI面接選考システム (aimensetu). All rights reserved.</div>
+    <div>公正な対話型選考を実現する採用DXプラットフォーム</div>
   </div>
-</div>
+</footer>
 
 <script>
   // ================= ブラウザ判定 =================
@@ -698,14 +1116,14 @@
   window.addEventListener('paste', (e) => {
     e.preventDefault();
     integrity.pasteAttemptCount++;
-    alert('⚠️ 面接中の貼り付け（ペースト）は禁止されています。');
+    alert('面接中の貼り付け（ペースト）は禁止されています。');
   });
 
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
       e.preventDefault();
       integrity.pasteAttemptCount++;
-      alert('⚠️ ショートカットによる貼り付けは無効化されています。');
+      alert('ショートカットによる貼り付けは無効化されています。');
     }
   });
 
@@ -810,19 +1228,20 @@
 
       if (isVirtual) {
         integrity.isVirtualCamera = true;
-        badge.innerText = '⚠️ 仮想カメラ検出';
+        badge.innerText = '仮想カメラ検出';
         badge.className = 'status-pill warn';
         note.innerHTML = `<span style="color:var(--danger)">※ 仮想カメラ (${camLabel}) が検出されました。実際のWebカメラに切り替えてください。</span>`;
       } else {
         isCameraOk = true;
-        badge.innerText = '✔ カメラOK';
+        badge.innerText = 'カメラ正常';
         badge.className = 'status-pill ok';
         note.innerText = `検出デバイス: ${camLabel}`;
       }
 
-      btn.innerText = '✔ 映像取得成功';
-      btn.style.background = '#dcfce7';
-      btn.style.color = '#166534';
+      btn.innerText = '映像取得成功';
+      btn.style.background = 'var(--success-light)';
+      btn.style.color = 'var(--success)';
+      btn.style.borderColor = 'var(--success-border)';
       updateStartButtonState();
 
       initFaceMesh();
@@ -847,7 +1266,7 @@
   function toggleSpeakerConfirmed() {
     isSpeakerOk = document.getElementById('speakerConfirmCheck').checked;
     const badge = document.getElementById('speakerStatus');
-    badge.innerText = isSpeakerOk ? '✔ 確認済' : '未確認';
+    badge.innerText = isSpeakerOk ? '確認済' : '未確認';
     badge.className = isSpeakerOk ? 'status-pill ok' : 'status-pill';
     updateStartButtonState();
   }
@@ -888,11 +1307,12 @@
       if (width > 12 && !isMicOk) {
         isMicOk = true;
         const badge = document.getElementById('micStatus');
-        badge.innerText = '✔ 音声検知OK';
+        badge.innerText = '音声検知OK';
         badge.className = 'status-pill ok';
-        btn.innerText = '✔ マイク確認完了';
-        btn.style.background = '#dcfce7';
-        btn.style.color = '#166534';
+        btn.innerText = 'マイク確認完了';
+        btn.style.background = 'var(--success-light)';
+        btn.style.color = 'var(--success)';
+        btn.style.borderColor = 'var(--success-border)';
         updateStartButtonState();
       }
       requestAnimationFrame(meterLoop);
@@ -904,7 +1324,7 @@
     const btn = document.getElementById('startInterviewBtn');
     if (isCameraOk && isSpeakerOk && isMicOk) {
       btn.disabled = false;
-      btn.innerText = '受検規則・誓約事項の確認へ進む →';
+      btn.innerText = '受検規則・誓約事項の確認へ進む';
     } else {
       btn.disabled = true;
       btn.innerText = '機器チェックを完了してください';
@@ -922,13 +1342,12 @@
 
   function handleTermsScroll() {
     const box = document.getElementById('termsBox');
-    // スクロールが最下部（余裕10px）に達したか判定
-    if (box.scrollHeight - box.scrollTop <= box.clientHeight + 10) {
+    if (box.scrollHeight - box.scrollTop <= box.clientHeight + 15) {
       const cb = document.getElementById('consentCheckbox');
       const label = document.getElementById('consentCheckLabel');
       cb.disabled = false;
       label.innerText = '上記すべての受検規則に同意し、不正行為を行わないことを誓約します';
-      label.style.color = '#0f172a';
+      label.style.color = 'var(--text-primary)';
       document.getElementById('scrollHint').style.display = 'none';
     }
   }
@@ -956,7 +1375,7 @@
     }
 
     document.getElementById('checkSection').style.display = 'none';
-    document.getElementById('interviewSection').style.display = 'block';
+    document.getElementById('interviewSection').style.display = 'flex';
 
     const livePipVideo = document.getElementById('livePipVideo');
     if (userMediaStream) {
@@ -1045,7 +1464,7 @@
       manualText.focus();
     } else {
       manualInputArea.style.display = 'none';
-      toggleManualBtn.innerText = 'マイクが不調な場合はこちら（テキスト手入力）';
+      toggleManualBtn.innerText = 'マイクが不調な場合はこちら（テキスト手入力へ切替）';
     }
   }
 
@@ -1060,14 +1479,14 @@
         timerBadge.style.display = 'none';
         break;
       case 'ai_speaking':
-        stateLabel.innerText = 'AI面接官が質問中...';
+        stateLabel.innerText = 'AI面接官が質問中';
         actionBtn.disabled = true;
         actionBtn.innerText = '面接官の発言をお聞きください';
         micIndicator.style.display = 'none';
         stopTimer();
         break;
       case 'answering':
-        stateLabel.innerText = 'あなたの回答ターン';
+        stateLabel.innerText = '回答ターン';
         actionBtn.disabled = false;
         actionBtn.innerText = '回答を完了して送信';
         micIndicator.style.display = isManualMode ? 'none' : 'flex';
@@ -1077,7 +1496,7 @@
         answerStartTime = Date.now();
         break;
       case 'processing':
-        stateLabel.innerText = 'AIが回答を分析中...';
+        stateLabel.innerText = '回答を分析中';
         actionBtn.disabled = true;
         actionBtn.innerText = '分析中...';
         micIndicator.style.display = 'none';
@@ -1109,10 +1528,10 @@
     remainingSeconds = totalSeconds;
 
     timerBadge.innerText = label || '回答目安: 1分 (標準)';
-    timerBadge.style.display = 'inline-block';
+    timerBadge.style.display = 'inline-flex';
     timerArea.style.display = 'block';
     timerHint.innerText = '目安時間を過ぎても自動切断はされません';
-    timerHint.style.color = 'var(--text-muted)';
+    timerHint.style.color = 'var(--text-tertiary)';
     
     updateTimerDisplay();
 
@@ -1144,8 +1563,8 @@
       progressBar.style.backgroundColor = 'var(--warning)';
       timerCountdown.style.color = 'var(--warning)';
     } else {
-      progressBar.style.backgroundColor = 'var(--primary)';
-      timerCountdown.style.color = 'var(--primary)';
+      progressBar.style.backgroundColor = 'var(--brand-accent)';
+      timerCountdown.style.color = 'var(--brand-accent)';
     }
   }
 
@@ -1187,7 +1606,7 @@
 
       if (data.is_resumed) {
         resumeNotice.style.display = 'block';
-        resumeNotice.innerText = `⚠️ 中断された面接（ターン ${currentTurn}）を再開します（やり直し回数: ${data.reload_count}回）`;
+        resumeNotice.innerText = `中断された面接（ターン ${currentTurn}）を再開します（やり直し回数: ${data.reload_count}回）`;
       }
 
       playQuestion(data.question_text, data.time_limit_sec, data.time_limit_label);
@@ -1299,7 +1718,7 @@
         playQuestion(data.question_text, data.time_limit_sec, data.time_limit_label);
       }
     } catch (err) {
-      alert('通信エラー: ' + err.message);
+      alert('通信エラーが発生しました: ' + err.message);
       setState('answering');
     }
   }
@@ -1311,7 +1730,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId })
       });
-      questionBox.innerText = '本日の面接はすべて終了いたしました。\nご参加いただき誠にありがとうございました。結果は追ってご連絡いたします。';
+      questionBox.innerText = '本日の面接はすべて終了いたしました。\nご参加いただき誠にありがとうございました。選考結果は追ってご連絡いたします。';
       setState('finished');
     } catch (err) {
       console.error(err);
@@ -1319,5 +1738,6 @@
     }
   }
 </script>
+
 </body>
 </html>
