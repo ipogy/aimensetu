@@ -15,8 +15,8 @@
   - MediaPipe FaceMesh による視線逸脱・不正監視データの計測
   - ブラウザ音声合成（Web Speech API: SpeechSynthesis）による質問の自動読み上げ
   - MediaRecorder による生音声（WebM 形式）のストリーミング収録 & リアルタイム音声認識フォールバック
-- **Gemini 1.5 Flash 連携による対話エンジン (`api/bootstrap.php`, `api/answer.php`)**
-  - **マルチモーダル文字起こし (STT)**: 録音音声バイナリ（Base64）を直接 Gemini 1.5 Flash にインライン送信（`temperature: 0.1`）して高精度書き起こし
+- **Gemini 3.8 Flash 連携による対話エンジン (`api/bootstrap.php`, `api/answer.php`)**
+  - **マルチモーダル文字起こし (STT)**: 録音音声バイナリ（Base64）を直接 Gemini 3.8 Flash にインライン送信（`temperature: 0.1`）して高精度書き起こし
   - **文脈に応じた動的深掘り質問**: ES 内容と過去ターンの対話履歴をプロンプトへ注入し、具体性に応じて「深掘り（`follow_up`）」か「次テーマ（`next_theme`）」を自律判定
   - **質問タイプ自動判定**: 質問の深さに応じて `type_a` (30秒・要約), `type_b` (60秒・標準), `type_c` (120秒・エピソード) を選定
   - **Structured Outputs (JSON Schema)**: レスポンス形式を厳格に制約し、フォーマット崩れを防止
@@ -41,7 +41,7 @@
 |---|---|---|
 | **バックエンド** | PHP 8.2+ | 厳格な型付け（`declare(strict_types=1);`）と軽量な手続き・関数ベース設計 |
 | **データベース** | MySQL 8.0+ / MariaDB 10.5+ | InnoDB エンジン、外部キー制約（`ON DELETE CASCADE`）、JSON 型対応 |
-| **AI / LLM** | Google Gemini API (`gemini-1.5-flash`) | 低遅延テキスト生成、マルチモーダル音声文字起こし、構造化 JSON 出力 |
+| **AI / LLM** | Google Gemini API (`gemini-3.8-flash`) | 低遅延テキスト生成、マルチモーダル音声文字起こし、構造化 JSON 出力 |
 | **フロントエンド** | HTML5, Vanilla JS, CSS3 | 外部フレームワーク非依存。Web Speech API, MediaRecorder, Web Audio API |
 | **不正検知** | MediaPipe FaceMesh | ブラウザ上でのリアルタイム視線推定・離脱率ログ記録 |
 | **音声補助** | Google Cloud Speech / Text-to-Speech | 音声認識および音声合成クライアント |
@@ -67,7 +67,7 @@ flowchart TD
     end
 
     subgraph External["外部サービス"]
-        GeminiFlash["Google Gemini API<br/>(gemini-1.5-flash)"]
+        GeminiFlash["Google Gemini API<br/>(gemini-3.8-flash)"]
         MTA["メールサーバー (MTA)"]
     end
 
@@ -192,7 +192,7 @@ DB_PASS=your_db_password
 
 # Google Gemini API
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-3.8-flash
 
 # 管理者ダッシュボード
 ADMIN_USERNAME=admin

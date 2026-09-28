@@ -111,7 +111,7 @@ function callGemini(string $prompt, ?array $responseSchema = null): array {
         throw new RuntimeException('GEMINI_API_KEY が設定されていません。');
     }
 
-    $model = $_ENV['GEMINI_MODEL'] ?? 'gemini-1.5-flash';
+    $model = $_ENV['GEMINI_MODEL'] ?? 'gemini-3.8-flash';
     $url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
     $generationConfig = [
@@ -175,7 +175,7 @@ function speechToText(string $audioFilePath): string {
         return '';
     }
 
-    $model = 'gemini-1.5-flash';
+    $model = 'gemini-3.8-flash';
     $url   = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
     $audioData = base64_encode(file_get_contents($audioFilePath));
