@@ -65,7 +65,7 @@ $testEntryUrl = "{$baseUrl}/entry.html?company=test";
     </a>
     <div class="header-nav">
       <a href="/admin/login.php" class="btn btn-outline">企業ログイン</a>
-      <a href="/admin/super_login.php" class="btn btn-dark">統括管理</a>
+      <a href="/super-admin" class="btn btn-dark">統括管理</a>
     </div>
   </div>
 </header>
@@ -136,7 +136,7 @@ $testEntryUrl = "{$baseUrl}/entry.html?company=test";
         </ul>
       </div>
       <div class="card-footer">
-        <a href="/admin/super_login.php" class="btn btn-dark" style="width: 100%;">
+        <a href="/super-admin" class="btn btn-dark" style="width: 100%;">
           統括管理者ポータル
         </a>
       </div>
