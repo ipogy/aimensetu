@@ -408,7 +408,7 @@ try {
         <input type="password" id="password" name="password" required placeholder="••••••••">
       </div>
       <button type="submit" class="btn-submit">
-        <span>認証してログイン</span>
+        <span>ログイン</span>
       </button>
     </form>
   </div>
